@@ -1,0 +1,62 @@
+@echo off
+setlocal enabledelayedexpansion
+
+REM Find flutter installation
+set "FLUTTER_PATH="
+if exist "C:\flutter\bin\flutter.bat" (
+    set "FLUTTER_PATH=C:\flutter\bin\flutter.bat"
+) else if exist "%USERPROFILE%\flutter\bin\flutter.bat" (
+    set "FLUTTER_PATH=%USERPROFILE%\flutter\bin\flutter.bat"
+) else (
+    REM Try to find in PATH
+    for /f "delims=" %%i in ('where flutter 2^>nul') do (
+        set "FLUTTER_PATH=%%i"
+        goto :found
+    )
+    :found
+)
+
+if "%FLUTTER_PATH%"=="" (
+    echo ERROR: Flutter not found!
+    echo Please install Flutter from https://flutter.dev
+    pause
+    exit /b 1
+)
+
+echo Using Flutter from: %FLUTTER_PATH%
+
+REM Check arguments
+if "%1"=="" (
+    echo.
+    echo ============================================
+    echo   Campus Bus Live - Run Options
+    echo ============================================
+    echo.
+    echo   1 - Chrome (Web)  [DEFAULT]
+    echo   2 - Windows
+    echo   3 - Android
+    echo   4 - iOS ^(Mac only^)
+    echo   5 - Get dependencies
+    echo.
+    set /p choice="Enter choice (1-5): "
+    
+    if "!choice!"=="1" set "DEVICE=chrome"
+    if "!choice!"=="2" set "DEVICE=windows"
+    if "!choice!"=="3" set "DEVICE=android"
+    if "!choice!"=="4" set "DEVICE=ios"
+    if "!choice!"=="5" (
+        call "%FLUTTER_PATH%" pub get
+        pause
+        exit /b 0
+    )
+    if "!choice!"=="" set "DEVICE=chrome"
+    
+    echo.
+    echo Running on !DEVICE!...
+    call "%FLUTTER_PATH%" run -d !DEVICE!
+) else (
+    REM Pass through all arguments to flutter
+    call "%FLUTTER_PATH%" %*
+)
+
+pause
